@@ -1,0 +1,681 @@
+{
+	"info": {
+		"_postman_id": "f0c3b094-439e-42dc-8537-ad4250e57dc9",
+		"name": "DummyJSON_User_API_Testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39630648"
+	},
+	"item": [
+		{
+			"name": "Get all users",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"limit\", 5);\r",
+							"pm.environment.set(\"skip\", 0);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Validate that response contains a list of users\", function () {\r",
+							"    pm.expect(jsonResponse.users).to.be.an(\"array\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate first user's name\", function () {\r",
+							"    pm.expect(jsonResponse.users[0].firstName).to.eql(\"Emily\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dummy_url}}",
+					"host": [
+						"{{dummy_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login user and get tokens",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"username\", \"emilys\");\r",
+							"pm.environment.set(\"password\", \"emilyspass\");\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.environment.set(\"access_Token\", jsonResponse.accessToken)\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"expiresInMins\": 30\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://dummyjson.com/user/login",
+					"protocol": "https",
+					"host": [
+						"dummyjson",
+						"com"
+					],
+					"path": [
+						"user",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get current authenticated user",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "token={{access_Token}}",
+						"type": "text"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://dummyjson.com/user/me",
+					"protocol": "https",
+					"host": [
+						"dummyjson",
+						"com"
+					],
+					"path": [
+						"user",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get a single user",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest('https://dummyjson.com/users', function (err, res) {\r",
+							"    if (err) {\r",
+							"        console.log(err);\r",
+							"        return;\r",
+							"    }\r",
+							"    var totalUsers = res.json().total;\r",
+							"\r",
+							"    var randomUserId = Math.floor(Math.random() * totalUsers) + 1;\r",
+							"\r",
+							"    pm.environment.set(\"randomUserId\", randomUserId);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"User data is returned\", function () {\r",
+							"    pm.expect(jsonResponse).to.have.property(\"id\");\r",
+							"    pm.expect(jsonResponse).to.have.property(\"firstName\");\r",
+							"    pm.expect(jsonResponse).to.have.property(\"lastName\");\r",
+							"    pm.expect(jsonResponse).to.have.property(\"email\");\r",
+							"   \r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{dummy_url}}/{{randomUserId}}",
+					"host": [
+						"{{dummy_url}}"
+					],
+					"path": [
+						"{{randomUserId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search users",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.sendRequest('https://dummyjson.com/users', function (err, res) {\r",
+							"    if (err) {\r",
+							"        console.log(\"Error fetching users:\", err);\r",
+							"        return;\r",
+							"    }\r",
+							"\r",
+							"    var jsonResponse = res.json();\r",
+							"    \r",
+							"    if (jsonResponse && jsonResponse.users && jsonResponse.users.length > 0) {\r",
+							"        var namesList = jsonResponse.users.map(user => user.firstName); // Assuming 'firstName' field exists\r",
+							"\r",
+							"        var randomSearchTerm = namesList[Math.floor(Math.random() * namesList.length)];\r",
+							"\r",
+							"        pm.environment.set(\"randomSearchTerm\", randomSearchTerm);\r",
+							"    } else {\r",
+							"        console.log(\"No users found in the response.\");\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"User data is returned\", function () {\r",
+							"    pm.expect(jsonResponse).to.have.property(\"users\");\r",
+							"    \r",
+							"    // Check if the users array exists and has items\r",
+							"    if (jsonResponse.users && jsonResponse.users.length > 0) {\r",
+							"        pm.expect(jsonResponse.users.length).to.be.greaterThan(0);\r",
+							"    } else {\r",
+							"        pm.expect(jsonResponse.users.length).to.eql(0);  // If no users, expect an empty array\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{dummy_url}}/search?q={{randomSearchTerm}}",
+					"host": [
+						"{{dummy_url}}"
+					],
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "{{randomSearchTerm}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter users",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.sendRequest('https://dummyjson.com/users', function (err, res) {\r",
+							"    if (err) {\r",
+							"        console.log(\"Error fetching users:\", err);\r",
+							"        return;\r",
+							"    }\r",
+							"\r",
+							"    var jsonResponse = res.json();\r",
+							"    \r",
+							"   \r",
+							"    if (jsonResponse && jsonResponse.users && jsonResponse.users.length > 0) {\r",
+							"\r",
+							"        var hairColors = [...new Set(jsonResponse.users.map(user => user.hair.color).filter(color => color))];\r",
+							"\r",
+							"   \r",
+							"        if (hairColors.length > 0) {\r",
+							"            var randomHairColor = hairColors[Math.floor(Math.random() * hairColors.length)];\r",
+							"\r",
+							"            pm.environment.set(\"randomHairColor\", randomHairColor);\r",
+							"        } else {\r",
+							"            console.log(\"No hair colors found in the response.\");\r",
+							"        }\r",
+							"    } else {\r",
+							"        console.log(\"No users found in the response.\");\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Filtered users have the correct hair color\", function () {\r",
+							"    pm.expect(jsonResponse).to.have.property(\"users\");\r",
+							"    jsonResponse.users.forEach(function(user) {\r",
+							"        pm.expect(user.hair.color).to.eql(pm.environment.get(\"randomHairColor\"));\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{dummy_url}}/filter?key=hair.color&value={{randomHairColor}}",
+					"host": [
+						"{{dummy_url}}"
+					],
+					"path": [
+						"filter"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "hair.color"
+						},
+						{
+							"key": "value",
+							"value": "{{randomHairColor}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sort Users By FirstName and Age",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.sendRequest('https://dummyjson.com/users', function (err, res) {\r",
+							"    if (err) {\r",
+							"        console.log(\"Error fetching users:\", err);\r",
+							"        return;\r",
+							"    }\r",
+							"\r",
+							"    var jsonResponse = res.json();\r",
+							"\r",
+							"    if (jsonResponse && jsonResponse.total) {\r",
+							"        var totalUsers = jsonResponse.total; \r",
+							"        var maxLimit = 10; \r",
+							"\r",
+							"        var randomLimit = Math.floor(Math.random() * maxLimit) + 1;  \r",
+							"        var randomSkip = Math.floor(Math.random() * totalUsers);\r",
+							"\r",
+							"        pm.environment.set(\"randomLimit\", randomLimit);\r",
+							"        pm.environment.set(\"randomSkip\", randomSkip);\r",
+							"    } else {\r",
+							"        console.log(\"No users found in the response.\");\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{dummy_url}}?limit={{randomLimit}}&skip={{randomSkip}}&select=firstName,age",
+					"host": [
+						"{{dummy_url}}"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "{{randomLimit}}"
+						},
+						{
+							"key": "skip",
+							"value": "{{randomSkip}}"
+						},
+						{
+							"key": "select",
+							"value": "firstName,age"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user's carts by user id",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.sendRequest('https://dummyjson.com/carts', function (err, res) {\r",
+							"    if (err) {\r",
+							"        console.log(\"Error fetching carts:\", err);\r",
+							"        return;\r",
+							"    }\r",
+							"\r",
+							"    var jsonResponse = res.json();\r",
+							"\r",
+							"    \r",
+							"    if (jsonResponse && jsonResponse.total) {\r",
+							"        var totalCarts = jsonResponse.total;\r",
+							"\r",
+							"     \r",
+							"        var randomCartId = Math.floor(Math.random() * totalCarts) + 1;\r",
+							"\r",
+							"     \r",
+							"        pm.environment.set(\"randomCartId\", randomCartId);\r",
+							"    } else {\r",
+							"        console.log(\"No carts found in the response.\");\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{dummy_url}}/{{randomCartId}}/carts",
+					"host": [
+						"{{dummy_url}}"
+					],
+					"path": [
+						"{{randomCartId}}",
+						"carts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add a new user",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var firstName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+							"var lastName = pm.variables.replaceIn(\"{{$randomLastName}}\");\r",
+							"var age = Math.floor(Math.random() * (100 - 18 + 1)) + 18; // Random age between 18 and 100\r",
+							"pm.environment.set(\"FirstName\", firstName);\r",
+							"pm.environment.set(\"LastName\", lastName);\r",
+							"pm.environment.set(\"Age\", age);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Validate user creation\", function () {\r",
+							"    const jsonResponse = pm.response.json();\r",
+							"    pm.expect(jsonResponse.firstName).to.eql(pm.environment.get(\"FirstName\"));\r",
+							"    pm.expect(jsonResponse.lastName).to.eql(pm.environment.get(\"LastName\"));\r",
+							"    \r",
+							"    pm.expect(Number(jsonResponse.age)).to.eql(pm.environment.get(\"Age\"));\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"firstName\": \"{{FirstName}}\",\r\n    \"lastName\": \"{{LastName}}\",\r\n    \"age\": \"{{Age}}\",\r\n    \"email\": \"example@example.com\",\r\n    \"username\": \"{{FirstName}}_{{LastName}}\",\r\n    \"password\": \"password123\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dummy_url}}/add",
+					"host": [
+						"{{dummy_url}}"
+					],
+					"path": [
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update a user",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var newLastName = pm.variables.replaceIn(\"{{$randomLastName}}\");\r",
+							"pm.environment.set(\"NewLastName\", newLastName);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Validate last name update\", function () {\r",
+							"    pm.expect(jsonResponse.lastName).to.eql(pm.environment.get(\"NewLastName\"));\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"lastName\": \"{{NewLastName}}\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dummy_url}}/{{randomUserId}}",
+					"host": [
+						"{{dummy_url}}"
+					],
+					"path": [
+						"{{randomUserId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete a user",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dummy_url}}/{{randomUserId}}",
+					"host": [
+						"{{dummy_url}}"
+					],
+					"path": [
+						"{{randomUserId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
